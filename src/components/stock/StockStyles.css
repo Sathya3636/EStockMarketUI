@@ -1,0 +1,23 @@
+.col-sm {
+    background-color:blue;
+    border: 2px solid #fff;
+    color: #fff;
+    text-align: center;
+    height: 80% !important;
+}
+
+.col-lg{
+    background-color:green;
+    border: 2px solid #fff;
+    color: #fff;
+    text-align: center;
+}
+
+.btn-link {   
+    color: white !important;
+    cursor: pointer;
+  }
+
+.form-group {
+    padding: 10px;
+}
