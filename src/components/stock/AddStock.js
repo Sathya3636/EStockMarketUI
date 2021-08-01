@@ -22,9 +22,13 @@ export default class AddStock extends Component {
     }
 
     onChangePrice(e) {
-        this.setState({
-            stockPrice: e.target.value
-        });
+        var regExp = new RegExp(/^\d*\.?\d*$/);
+
+        if (e.target.value === '' || regExp.test(e.target.value)) {
+            this.setState({
+                stockPrice: e.target.value
+            });
+        }
     }
 
     componentDidMount() {
@@ -42,16 +46,16 @@ export default class AddStock extends Component {
     }
 
     handleSelect(e) {
-        let cCode = e.split(",")[0];
-        let cName = e.split(",")[1];
+        let cCode = e.split(",,,,,,")[0];
+        let cName = e.split(",,,,,,")[1];
         this.setState({
             companyCode: cCode,
             companyName: cName
         });
     }
 
-    addStock() {
-
+    addStock(e) {
+        e.preventDefault();
         if (this.state.companyCode && this.state.stockPrice) {
 
             var data = {
@@ -71,6 +75,11 @@ export default class AddStock extends Component {
                     console.log(response.data);
                 })
                 .catch(e => {
+                    this.setState({
+                        submitted: true,
+                        allfieldsRequired: false,
+                        error: true
+                    });
                     console.log(e);
                 });
         }
@@ -83,20 +92,23 @@ export default class AddStock extends Component {
 
     render() {
         return (
-            <div className="submit-form">
+            <form className="companyForm" onSubmit={this.addStock}>
                 <h2>Add Stock Price</h2>
-                {this.state.allfieldsRequired ? (
-                    <h4>All fields are Mandatory!</h4>
-                ) : this.state.submitted ? (
-                    <h4>Stock Price added successfully!</h4>
-                ) : (
-                    <h4></h4>
-                )}
+                {this.state.submitted ? (
+                    <label style={{ color: "green" }}>Stock added successfully!</label>
+                ) :
+                    this.state.allfieldsRequired ? (
+                        <label style={{ color: "red" }}>All are Mandatory fields!</label>
+                    ) : this.state.error ? (
+                        <label style={{ color: "red" }}>Error Occured!</label>
+                    ) : (
+                        <label ></label>
+                    )}
                 <div>
                     <div className="form-group">
                         <DropdownButton alignRight title="Select Company" onSelect={this.handleSelect}>
                             {this.state.companies.map(item => (
-                                <Dropdown.Item key={item.code} eventKey={item.code + "," + item.name}>{item.name}</Dropdown.Item>
+                                <Dropdown.Item key={item.code} eventKey={item.code + ",,,,,," + item.name}>{item.name}</Dropdown.Item>
                             ))
                             }
                         </DropdownButton>
@@ -109,6 +121,7 @@ export default class AddStock extends Component {
                             className="form-control"
                             value={this.state.companyName}
                             readOnly
+                            required
                         />
                     </div>
                     <div className="form-group">
@@ -123,11 +136,11 @@ export default class AddStock extends Component {
                             name="stockPrice"
                         />
                     </div>
-                    <button onClick={this.addStock} className="btn btn-success right">
-                        Submit
+                    <button className="btn btn-success right">
+                        Add
                     </button>
                 </div>
-            </div >
+            </form>
         );
     }
 };

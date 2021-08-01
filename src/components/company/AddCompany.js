@@ -10,6 +10,7 @@ export default class AddCompany extends Component {
         this.onChangeTurnOver = this.onChangeTurnOver.bind(this);
         this.onChangeWebsite = this.onChangeWebsite.bind(this);
         this.onChangeStockExchange = this.onChangeStockExchange.bind(this);
+        this.handleValidation = this.handleValidation.bind(this);
         this.addCompany = this.addCompany.bind(this);
 
         this.state = {
@@ -20,14 +21,20 @@ export default class AddCompany extends Component {
             website: "",
             stockExchange: "",
             submitted: false,
-            allfieldsRequired: false
+            errors: "",
+            error: false,
+            compCodeError: false
         };
     }
 
     onChangeCode(e) {
-        this.setState({
-            code: e.target.value
-        });
+        var regExp = new RegExp(/[^0-9a-zA-Z]/);
+
+        if (e.target.value === '' || !regExp.test(e.target.value)) {
+            this.setState({
+                code: e.target.value
+            });
+        }
     }
 
     onChangeName(e) {
@@ -43,9 +50,13 @@ export default class AddCompany extends Component {
     }
 
     onChangeTurnOver(e) {
-        this.setState({
-            turnOver: e.target.value
-        });
+        var regExp = new RegExp(/^\d*\.?\d*$/);
+
+        if (e.target.value === '' || regExp.test(e.target.value)) {
+            this.setState({
+                turnOver: e.target.value
+            });
+        }
     }
 
     onChangeWebsite(e) {
@@ -60,9 +71,31 @@ export default class AddCompany extends Component {
         });
     }
 
-    addCompany() {
+    handleValidation() {
+        let errors = {};
+        let formIsValid = true;
 
-        if (this.state.code && this.state.name && this.state.ceoName && this.state.turnOver && this.state.website && this.state.stockExchange) {
+        if (typeof this.state.code !== "undefined") {
+            if (this.state.code.match(/[^0-9a-zA-Z]/)) {
+                formIsValid = false;
+                errors["code"] = "Only Alphanumeric";
+            }
+        }
+
+        if (typeof this.state.turnOver !== "undefined") {
+            if (parseFloat(this.state.turnOver) < 100000000) {
+                formIsValid = false;
+                errors["turnOver"] = "Should be more than 10 Cr";
+            }
+        }
+
+        this.setState({ errors: errors });
+        return formIsValid;
+    }
+
+    addCompany(e) {
+        e.preventDefault();
+        if (this.handleValidation()) {
 
             var data = {
                 code: this.state.code,
@@ -83,31 +116,37 @@ export default class AddCompany extends Component {
                         website: "",
                         stockExchange: "",
                         submitted: true,
-                        allfieldsRequired: false
                     });
                     console.log(response.data);
                 })
                 .catch(e => {
+                    if (e.response.data.indexOf("Resource with specified id or name already exists.")) {
+                        this.setState({
+                            compCodeError: true
+                        });
+                    }
+                    else {
+                        this.setState({
+                            error: true
+                        });
+                    }
                     console.log(e);
                 });
-        }
-        else {
-            this.setState({
-                allfieldsRequired: true
-            });
         }
     }
 
     render() {
         return (
-            <div className="submit-form">
+            <form className="companyForm" onSubmit={this.addCompany} >
                 <h2>Add Company</h2>
-                {this.state.allfieldsRequired ? (
-                    <h4>All fields are Mandatory!</h4>
-                ) : this.state.submitted ? (
-                    <h4>Company added successfully!</h4>
+                {this.state.submitted ? (
+                    <label style={{ color: "green" }}>Company added successfully!</label>
+                ) : this.state.compCodeError ? (
+                    <label style={{ color: "red" }}>Company Code already exists. Please give unique Company Code!</label>
+                ) : this.state.error ? (
+                    <label style={{ color: "red" }}>Error Occured!</label>
                 ) : (
-                    <h4></h4>
+                    <label ></label>
                 )}
                 <div>
                     <div className="form-group">
@@ -121,6 +160,7 @@ export default class AddCompany extends Component {
                             onChange={this.onChangeCode}
                             name="companyCode"
                         />
+                        <span style={{ color: "red" }}>{this.state.errors["code"]}</span>
                     </div>
                     <div className="form-group">
                         <label htmlFor="companyName">Comany Name</label>
@@ -149,7 +189,7 @@ export default class AddCompany extends Component {
                     <div className="form-group">
                         <label htmlFor="turnOver">Turn Over</label>
                         <input
-                            type="number"
+                            type="text"
                             className="form-control"
                             id="turnOver"
                             required
@@ -157,11 +197,12 @@ export default class AddCompany extends Component {
                             onChange={this.onChangeTurnOver}
                             name="turnOver"
                         />
+                        <span style={{ color: "red" }}>{this.state.errors["turnOver"]}</span>
                     </div>
                     <div className="form-group">
                         <label htmlFor="website">Website</label>
                         <input
-                            type="text"
+                            type="url"
                             className="form-control"
                             id="website"
                             required
@@ -182,11 +223,11 @@ export default class AddCompany extends Component {
                             name="stockExchange"
                         />
                     </div>
-                    <button onClick={this.addCompany} className="btn btn-success">
-                        Submit
+                    <button type="submit" className="btn btn-success">
+                        Add
                     </button>
                 </div>
-            </div >
+            </form>
         );
     }
 };

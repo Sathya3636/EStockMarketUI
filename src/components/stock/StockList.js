@@ -88,8 +88,8 @@ export default class StockList extends Component {
     };
 
     handleSelect(e) {
-        let cCode = e.split(",")[0];
-        let cName = e.split(",")[1];
+        let cCode = e.split(",,,,,,")[0];
+        let cName = e.split(",,,,,,")[1];
         this.setState({
             code: cCode,
             name: cName
@@ -118,7 +118,7 @@ export default class StockList extends Component {
                 <div className="form-group">
                     <DropdownButton alignRight title="Select Company" id="companyCode" onSelect={this.handleSelect}>
                         {this.state.companies.map(item => (
-                            <Dropdown.Item key={item.code} eventKey={item.code + "," + item.name}>{item.name}</Dropdown.Item>
+                            <Dropdown.Item key={item.code} eventKey={item.code + ",,,,,," + item.name}>{item.name}</Dropdown.Item>
                         ))
                         }
                     </DropdownButton>
