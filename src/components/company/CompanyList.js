@@ -1,11 +1,9 @@
 import React, { Component } from "react";
+import BootstrapTable from 'react-bootstrap-table-next';
 import CompanyService from '../../services/company/company.service.js';
-import Container from 'react-bootstrap/Container';
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Button from 'react-bootstrap/Button'
-import Spinner from 'react-bootstrap/Spinner'
-import "./CompanyStyles.css";
+import Button from 'react-bootstrap/Button';
+import Spinner from 'react-bootstrap/Spinner';
+import paginationFactory from 'react-bootstrap-table2-paginator';
 
 export default class CompanyList extends Component {
     constructor(props) {
@@ -14,6 +12,38 @@ export default class CompanyList extends Component {
         this.state =
         {
             companies: [],
+            columns: [{
+                dataField: 'code',
+                text: 'Company Code'
+            },
+            {
+                dataField: 'name',
+                text: 'Company Name'
+            }, {
+                dataField: 'ceoName',
+                text: 'CEO Name'
+            },
+            {
+                dataField: 'turnOver',
+                text: 'TurnOver'
+            },
+            {
+                dataField: 'website',
+                text: 'Website'
+            },
+            {
+                dataField: 'stockExchange',
+                text: 'Stock Exchange'
+            },
+            {
+                dataField: 'latestStockPrice',
+                text: 'Latest Stock Price'
+            },
+            {
+                dataField: 'button',
+                text: '',
+                formatter: this.linkDelete,
+            }],
             spinner: false
         };
     }
@@ -37,6 +67,15 @@ export default class CompanyList extends Component {
                     spinner: false
                 });
             });
+    }
+
+    componentDidUpdate(prevProps, nextProps) {
+        if (prevProps !== this.props) {
+            console.log(nextProps);
+            this.setState({
+                companies: nextProps.companies
+            });
+        }
     }
 
     deleteCompany(companyCode) {
@@ -70,6 +109,12 @@ export default class CompanyList extends Component {
             });
     }
 
+    linkDelete = (cell, row, rowIndex, formatExtraData) => {
+        return (
+            <Button onClick={() => { this.deleteCompany(row.code); }}>Delete</Button>
+        );
+    };
+
     render() {
         return (
             <div>
@@ -77,31 +122,13 @@ export default class CompanyList extends Component {
                 <Spinner animation="border" role="status" hidden={!this.state.spinner}>
                     <span className="visually-hidden">Loading...</span>
                 </Spinner>
-                <Container>
-                    <Row>
-                        <Col sm>Company Code</Col>
-                        <Col sm>Company Name</Col>
-                        <Col sm>CEO Name</Col>
-                        <Col sm>TurnOver</Col>
-                        <Col sm>Website</Col>
-                        <Col sm>Stock Exchange</Col>
-                        <Col sm>Latest Stock Price</Col>
-                        <Col sm>Delete</Col>
-                    </Row>
-                    {this.state.companies.map(item => (
-                        <Row key={item.code}>
-                            <Col lg>{item.code}</Col>
-                            <Col lg>{item.name}</Col>
-                            <Col lg>{item.ceoName}</Col>
-                            <Col lg>{item.turnOver}</Col>
-                            <Col lg>{item.website}</Col>
-                            <Col lg>{item.stockExchange}</Col>
-                            <Col lg>{item.latestStockPrice}</Col>
-                            <Col lg><Button variant="link" onClick={() => { this.deleteCompany(item.code) }} >Delete</Button></Col>
-                        </Row>
-                    ))
-                    }
-                </Container>
+                <BootstrapTable keyField='code'
+                    striped
+                    hover
+                    columns={this.state.columns}
+                    data={this.state.companies}
+                    pagination={paginationFactory()} >
+                </BootstrapTable>
             </div>
         );
     }

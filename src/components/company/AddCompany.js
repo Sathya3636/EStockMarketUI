@@ -23,7 +23,8 @@ export default class AddCompany extends Component {
             submitted: false,
             errors: "",
             error: false,
-            compCodeError: false
+            compCodeError: false,
+            websiteError: false
         };
     }
 
@@ -120,7 +121,13 @@ export default class AddCompany extends Component {
                     console.log(response.data);
                 })
                 .catch(e => {
-                    if (e.response.data.indexOf("Resource with specified id or name already exists.")) {
+                    console.log(e);
+                    if(e && e.response && e.response.status == 400){
+                        this.setState({
+                            websiteError: true
+                        }); 
+                    }
+                   else if (e && e.response && e.response.data && e.response.data.indexOf("Resource with specified id or name already exists.")) {
                         this.setState({
                             compCodeError: true
                         });
@@ -129,8 +136,7 @@ export default class AddCompany extends Component {
                         this.setState({
                             error: true
                         });
-                    }
-                    console.log(e);
+                    }                    
                 });
         }
     }
@@ -143,7 +149,10 @@ export default class AddCompany extends Component {
                     <label style={{ color: "green" }}>Company added successfully!</label>
                 ) : this.state.compCodeError ? (
                     <label style={{ color: "red" }}>Company Code already exists. Please give unique Company Code!</label>
-                ) : this.state.error ? (
+                ) :
+                this.state.websiteError ? (
+                    <label style={{ color: "red" }}>Please provide valid website!</label>
+                ): this.state.error ? (
                     <label style={{ color: "red" }}>Error Occured!</label>
                 ) : (
                     <label ></label>
@@ -202,7 +211,7 @@ export default class AddCompany extends Component {
                     <div className="form-group">
                         <label htmlFor="website">Website</label>
                         <input
-                            type="url"
+                            type="text"
                             className="form-control"
                             id="website"
                             required
@@ -210,6 +219,7 @@ export default class AddCompany extends Component {
                             onChange={this.onChangeWebsite}
                             name="website"
                         />
+                        <span style={{ color: "red" }}>{this.state.errors["website"]}</span>
                     </div>
                     <div className="form-group">
                         <label htmlFor="stockExchange">Stock Exchange</label>
